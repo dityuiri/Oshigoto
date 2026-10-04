@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oshigoto Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+/* MOCKUP: the admin lives behind Caddy basic_auth at /admin. */
+:root { --bg: #f5f5f7; --card: #fff; --ink: #1d1d1f; --mute: #6e6e73; --line: #e2e2e7; --acc: #e0457b; --ok: #1a7f37; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #141416; --card: #1f1f23; --ink: #f2f2f5; --mute: #9a9aa3; --line: #34343a; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 Inter, "Noto Sans JP", sans-serif; }
+header { display: flex; align-items: center; gap: 16px; padding: 14px 24px; background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2; }
+header b { font-size: 16px; }
+nav { display: flex; gap: 4px; }
+nav button { border: 0; background: none; padding: 7px 14px; border-radius: 8px; font: 600 13px Inter, "Noto Sans JP", sans-serif; color: var(--mute); cursor: pointer; }
+nav button.on { background: var(--bg); color: var(--ink); }
+header .view { margin-left: auto; color: var(--acc); text-decoration: none; font-weight: 600; font-size: 13px; }
+main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; display: grid; grid-template-columns: 1fr 380px; gap: 20px; align-items: start; }
+@media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.card h3 { margin: 0; padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+.card h3 small { font-weight: 400; color: var(--mute); }
+.row { display: grid; grid-template-columns: 34px 44px 1fr auto auto; gap: 12px; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row.sel { background: color-mix(in srgb, var(--acc) 8%, transparent); }
+.row.drag { opacity: .4; }
+.grip { color: var(--mute); cursor: grab; font: 600 11px ui-monospace, monospace; white-space: nowrap; }
+.av { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; }
+.row .n b { display: block; }
+.row .n span { color: var(--mute); font-size: 12px; }
+.sw { width: 36px; height: 20px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; border: 0; }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+.sw.on { background: var(--ok); }
+.sw.on::after { left: 18px; }
+.edit { border: 1px solid var(--line); background: none; color: var(--ink); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+.hint { padding: 10px 18px; color: var(--mute); font-size: 12px; border-top: 1px solid var(--line); }
+form { padding: 16px 18px 18px; display: grid; gap: 12px; }
+label { display: grid; gap: 4px; font-size: 12px; color: var(--mute); font-weight: 500; }
+input, textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; }
+textarea { min-height: 60px; resize: vertical; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fetch { display: flex; gap: 8px; }
+.fetch input { flex: 1; }
+.fetch button, .save { border: 0; background: var(--ink); color: var(--card); border-radius: 8px; padding: 8px 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.save { background: var(--acc); color: #fff; padding: 10px; }
+.fetched { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 10px; background: color-mix(in srgb, var(--ok) 10%, transparent); color: var(--ok); font-size: 12px; }
+.fetched .av, .fetched .jk { flex: none; }
+.jk { width: 52px; height: 52px; border-radius: 8px; display: grid; place-items: center; color: #fff; }
+.sub { font-size: 11px; color: var(--mute); margin-top: -6px; }
+.color { display: flex; gap: 8px; align-items: center; }
+.color input[type=color] { width: 44px; padding: 2px; height: 36px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <b>おしごと Admin</b>
+  <nav><button class="on" data-tab="oshi">推し</button><button data-tab="songs">推し曲</button><button data-tab="groups">グループ</button><button data-tab="work">Work</button></nav>
+  <a class="view" href="index.html">サイトを見る <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+</header>
+
+<!-- ============ OSHI TAB ============ -->
+<main data-pane="oshi">
+  <section class="card">
+    <h3>推し一覧 <small>ドラッグで並べ替え (サイトの No. はこの順番)</small></h3>
+    <div id="list"></div>
+    <div class="hint"><i class="fa-solid fa-circle-info"></i> 非表示にした推しはサイトに出ません。卒業日を入れると「卒業した推し」に移動します。</div>
+  </section>
+
+  <section class="card">
+    <h3>編集: 月城りん</h3>
+    <form onsubmit="return false">
+      <label>X ハンドル
+        <div class="fetch"><input value="@tsukishiro_rin"><button type="button" id="fx"><i class="fa-solid fa-rotate"></i> 取得</button></div>
+      </label>
+      <div class="fetched" id="fxres" hidden><div class="av" style="background:#8b6cff">月</div><div>アイコンと名前を取得しました。画像はサーバーに保存されます(毎日自動更新)。</div></div>
+      <div class="two"><label>名前 (日本語)<input value="月城りん"></label><label>Romaji<input value="Tsukishiro Rin"></label></div>
+      <div class="two"><label>グループ<input value="ステラリウム"></label><label>推し始め<input type="date" value="2023-04-16"></label></div>
+      <div class="two"><label>Instagram<input placeholder="@..."></label><label>TikTok<input placeholder="@..."></label></div>
+      <label>メンカラ<div class="color"><input type="color" value="#8b6cff"><span class="sub" style="margin:0">カードの色になります</span></div></label>
+      <div class="two"><label>ひとこと (JA)<textarea>笑顔が最強。</textarea></label><label>Note (EN)<textarea>Her smile is unbeatable.</textarea></label></div>
+      <label>卒業日 (任意)<input type="date"></label>
+      <button class="save">保存</button>
+    </form>
+  </section>
+</main>
+
+<!-- ============ SONGS TAB ============ -->
+<main data-pane="songs" hidden>
+  <section class="card">
+    <h3>推し曲 <small>推しがいるグループごとに表示</small></h3>
+    <div id="slist"></div>
+  </section>
+  <section class="card">
+    <h3>曲を追加</h3>
+    <form onsubmit="return false">
+      <label>TuneCore リンク (linkco.re)
+        <div class="fetch"><input id="lc" placeholder="https://linkco.re/xxxxxxxx"><button type="button" id="flc"><i class="fa-solid fa-wand-magic-sparkles"></i> 自動入力</button></div>
+      </label>
+      <div class="sub">貼るだけでジャケット・タイトルを取得します</div>
+      <div class="fetched" id="lcres" hidden><div class="jk" style="background:linear-gradient(135deg,#8b6cff,#2a1f66)"><i class="fa-solid fa-music"></i></div><div><b>銀河の端で待ってて</b><br>ステラリウム · 2024 · ジャケット保存済み</div></div>
+      <div class="two"><label>タイトル<input id="st"></label><label>Romaji<input id="sr"></label></div>
+      <div class="two"><label>グループ<input id="sg"></label><label>MV (YouTube)<input placeholder="https://youtu.be/..."></label></div>
+      <div class="two"><label>コメント (JA)<textarea></textarea></label><label>Comment (EN)<textarea></textarea></label></div>
+      <div class="two"><label>推しポイント (JA)<input placeholder="りんの落ちサビ 2:48"></label><label>Oshi point (EN)<input placeholder="Rin's solo at 2:48"></label></div>
+      <button class="save">追加</button>
+    </form>
+  </section>
+</main>
+
+<main data-pane="groups" hidden><section class="card"><h3>グループ</h3><div class="hint" style="border:0">名前 (JA/EN)、公式X、公式サイト、マイ現場のグループとの紐付け</div></section></main>
+<main data-pane="work" hidden><section class="card"><h3>Work</h3><div class="hint" style="border:0">Bio (EN/JA)、経歴 (会社名なしの説明文)、プロジェクト、技術スタック</div></section></main>
+
+<script>
+const oshis = [
+  ["月城りん", "ステラリウム", "#8b6cff", true], ["朝比奈ひな", "はるいろ☆パレット", "#ff7aa8", true],
+  ["紅葉まい", "ネオン少女隊", "#ff8a3d", true], ["水瀬あお", "はるいろ☆パレット", "#43b8ff", true],
+  ["白雪ねね", "ステラリウム", "#b9b9d6", true], ["小春ぽぽ", "もふもふ放課後", "#ffc94d", true],
+  ["夜宵くろえ", "黒薔薇ノクターン", "#d14b6a", true], ["天音そら", "空色サイダー", "#4fd1e8", true],
+  ["若葉みどり", "ネオン少女隊", "#3ecf8e", true], ["綿貫もも", "もふもふ放課後", "#ffa0c8", true],
+  ["星河ゆめ", "空色サイダー", "#b48cff", true], ["薄荷ちょこ", "ミントチョコ症候群", "#6fe3c1", false],
+];
+const list = document.getElementById("list");
+function render() {
+  list.innerHTML = oshis.map(([n, g, c, v], i) => `
+    <div class="row ${i === 0 ? "sel" : ""}" draggable="true" data-i="${i}">
+      <span class="grip"><i class="fa-solid fa-grip-vertical"></i> ${String(i + 1).padStart(2, "0")}</span>
+      <div class="av" style="background:${c}">${n[0]}</div>
+      <div class="n"><b>${n}</b><span>${g}</span></div>
+      <button class="sw ${v ? "on" : ""}" data-i="${i}" title="表示"></button>
+      <button class="edit"><i class="fa-solid fa-pen"></i></button>
+    </div>`).join("");
+}
+render();
+let from = null;
+list.addEventListener("dragstart", e => { from = +e.target.dataset.i; e.target.classList.add("drag"); });
+list.addEventListener("dragover", e => e.preventDefault());
+list.addEventListener("drop", e => {
+  const to = +e.target.closest(".row")?.dataset.i;
+  if (from === null || isNaN(to)) return;
+  oshis.splice(to, 0, oshis.splice(from, 1)[0]); from = null; render();
+});
+list.addEventListener("click", e => { const s = e.target.closest(".sw"); if (s) { oshis[s.dataset.i][3] ^= 1; render(); } });
+
+document.getElementById("slist").innerHTML = [
+  ["銀河の端で待ってて", "ステラリウム", "#8b6cff"], ["ハッピーエンドしか知らない", "はるいろ☆パレット", "#ff7aa8"],
+  ["午前零時のネオンサイン", "ネオン少女隊", "#ff8a3d"], ["スノードーム", "ステラリウム", "#b9b9d6"],
+].map(([t, g, c]) => `<div class="row" style="grid-template-columns:20px 44px 1fr auto">
+  <i class="fa-solid fa-grip-vertical grip"></i><div class="av" style="background:${c};border-radius:8px"><i class="fa-solid fa-music"></i></div>
+  <div class="n"><b>${t}</b><span>${g}</span></div><button class="edit"><i class="fa-solid fa-pen"></i></button></div>`).join("");
+
+document.getElementById("fx").onclick = () => document.getElementById("fxres").hidden = false;
+document.getElementById("flc").onclick = () => {
+  document.getElementById("lc").value ||= "https://linkco.re/AbCd1234";
+  document.getElementById("lcres").hidden = false;
+  st.value = "銀河の端で待ってて"; sr.value = "Ginga no Hashi de Mattete"; sg.value = "ステラリウム";
+};
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("main").forEach(m => m.hidden = m.dataset.pane !== b.dataset.tab);
+});
+</script>
+</body>
+</html>

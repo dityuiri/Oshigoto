@@ -1,0 +1,23 @@
+# おしごと on the MyGenba VM. One container, joined to MyGenba's compose network so
+# MyGenba's Caddy serves dityuiri.my.id and MyGenba's Postgres holds the data
+# (its own `oshigoto` database). All mutable state on the host lives in ./data
+# (.env, uploads/), so image rebuilds and `git pull` never touch it.
+services:
+  oshigoto:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./data:/data              # /data/.env (ADMIN_*, DATABASE_URL) + /data/uploads
+    expose:
+      - "8710"                    # internal only; Caddy reaches it as oshigoto:8710
+    networks:
+      - mygenba
+    logging:                      # same cap as MyGenba so logs can't fill the disk
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+networks:
+  mygenba:
+    external: true
+    # MyGenba's default network (<project dir>_default). Check with `docker network ls`.
+    name: ${MYGENBA_NETWORK:-mygenba_default}

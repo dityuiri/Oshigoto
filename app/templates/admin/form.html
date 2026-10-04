@@ -1,0 +1,61 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<main class="narrow">
+  <p class="crumb"><a href="/admin/{{ kind }}">← {{ ent.title }}</a></p>
+  <section class="card">
+    <h3>{% if obj.id %}編集{% else %}追加{% endif %}: {{ ent.title }}</h3>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="post" action="/admin/{{ kind }}/{{ obj.id or 'new' }}" enctype="multipart/form-data" class="fields">
+      {% for f in ent.fields %}
+      {% set v = obj[f.name] if obj[f.name] is not none else "" %}
+      <label class="{{ 'wide' if f.wide or f.kind in ('textarea',) }}">
+        <span>{{ f.label }}{% if f.required %} <em>*</em>{% endif %}</span>
+        {% if f.kind == "textarea" %}
+          <textarea name="{{ f.name }}">{{ v }}</textarea>
+        {% elif f.kind == "date" %}
+          <input type="date" name="{{ f.name }}" value="{{ v }}">
+        {% elif f.kind == "int" %}
+          <input type="number" name="{{ f.name }}" value="{{ v }}">
+        {% elif f.kind == "color" %}
+          <span class="color"><input type="color" name="{{ f.name }}" value="{{ v or '#ff6fae' }}"><small>カードやタブの色になります</small></span>
+        {% elif f.kind == "bool" %}
+          <span class="check"><input type="hidden" name="{{ f.name }}" value="0"><input type="checkbox" name="{{ f.name }}" value="1" {{ 'checked' if v }}> はい</span>
+        {% elif f.kind == "group" %}
+          <select name="{{ f.name }}">
+            <option value="">選択してください</option>
+            {% for g in groups %}<option value="{{ g.id }}" {{ 'selected' if v == g.id }}>{{ g.name_ja }}</option>{% endfor %}
+          </select>
+          {% if not groups %}<small>先に <a href="/admin/groups/new">グループを追加</a> してください</small>{% endif %}
+        {% elif f.kind == "x_handle" %}
+          <span class="fetch"><input name="{{ f.name }}" value="{{ v }}" placeholder="@handle">
+            <button type="button" data-fetch-x data-image="icon_path" data-name="name_ja"><i class="fa-solid fa-rotate"></i> 取得</button></span>
+        {% elif f.kind == "song_link" %}
+          <span class="fetch"><input name="{{ f.name }}" value="{{ v }}" placeholder="https://linkco.re/… / open.spotify.com/track/…">
+            <button type="button" data-fetch-song data-image="jacket_path"><i class="fa-solid fa-wand-magic-sparkles"></i> 自動入力</button></span>
+          <select class="track-pick" hidden></select>
+        {% elif f.kind == "image" %}
+          <span class="image" data-image-field="{{ f.name }}">
+            <img class="preview" src="{{ media_url(v) if v }}" alt="" {% if not v %}hidden{% endif %}>
+            <span class="image-ctl">
+              <input type="url" name="{{ f.name }}__url" value="" placeholder="画像のリンク (https://…)">
+              <span class="file-alt">またはファイル: <input type="file" name="{{ f.name }}__file" accept="image/png,image/jpeg,image/webp,image/gif"></span>
+              {% if v %}<span class="check"><input type="checkbox" name="{{ f.name }}__clear" value="1"> 画像を削除</span>{% endif %}
+            </span>
+          </span>
+        {% else %}
+          <input name="{{ f.name }}" value="{{ v }}">
+        {% endif %}
+        {% if f.help %}<small>{{ f.help }}</small>{% endif %}
+      </label>
+      {% endfor %}
+      <div class="fetch-status wide" hidden></div>
+      <button class="save wide">保存</button>
+    </form>
+  </section>
+  {% if obj.id %}
+  <form method="post" action="/admin/{{ kind }}/{{ obj.id }}/delete" class="extra" data-confirm="本当に削除しますか?">
+    <button class="danger"><i class="fa-solid fa-trash"></i> 削除</button>
+  </form>
+  {% endif %}
+</main>
+{% endblock %}

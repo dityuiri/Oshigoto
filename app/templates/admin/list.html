@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<main class="narrow">
+  <section class="card">
+    <h3>{{ ent.title }} <small>{{ rows|length }}件</small>
+      <a class="add" href="/admin/{{ kind }}/new"><i class="fa-solid fa-plus"></i> 追加</a>
+    </h3>
+    <div {% if kind != "groups" %}data-reorder="/admin/{{ kind }}/reorder"{% endif %}>
+      {% for r in rows %}
+      <div class="row" {% if kind != "groups" %}draggable="true"{% endif %} data-id="{{ r.id }}">
+        {% if kind != "groups" %}<span class="grip"><i class="fa-solid fa-grip-vertical"></i>{% if ent.numbered and r.num %} <span class="num">{{ "%02d"|format(r.num) }}</span>{% if r.pair %}<span class="pair">2人目</span>{% endif %}{% elif ent.numbered %} <span class="nonum">--</span>{% endif %}</span>{% else %}<span></span>{% endif %}
+        <div class="av {{ 'sq' if r.square }}" style="background:{{ r.color }}">{{ r.initial }}{% if r.thumb %}<img src="{{ media_url(r.thumb) }}" alt="">{% endif %}</div>
+        <a class="n" href="/admin/{{ kind }}/{{ r.id }}"><b>{{ r.title }}</b><span>{{ r.sub }}</span></a>
+        {% if ent.has_visible %}
+        <form method="post" action="/admin/{{ kind }}/{{ r.id }}/toggle"><button class="sw {{ 'on' if r.visible }}" title="表示 / 非表示"></button></form>
+        {% else %}<span></span>{% endif %}
+        <a class="edit" href="/admin/{{ kind }}/{{ r.id }}"><i class="fa-solid fa-pen"></i></a>
+      </div>
+      {% else %}
+      <div class="hint" style="border:0">まだありません。「追加」から登録してください。</div>
+      {% endfor %}
+    </div>
+    {% if ent.hint %}<div class="hint"><i class="fa-solid fa-circle-info"></i> {{ ent.hint }}</div>{% endif %}
+  </section>
+  {% for label, url in ent.extra_actions %}
+  <form method="post" action="{{ url }}" class="extra" data-busy="処理中… (数十秒かかることがあります)">
+    <button class="ghost"><i class="fa-solid fa-rotate"></i> {{ label }}</button>
+  </form>
+  {% endfor %}
+</main>
+{% endblock %}

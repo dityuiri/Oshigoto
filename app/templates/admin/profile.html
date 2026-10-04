@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<main class="narrow">
+  <section class="card">
+    <h3>Profile <small>名前・自己紹介・リンク</small></h3>
+    <form method="post" action="/admin/profile" class="fields">
+      {% for key, label, kind in fields %}
+      <label class="{{ 'wide' if kind == 'textarea' }}">
+        <span>{{ label }}</span>
+        {% if kind == "textarea" %}<textarea name="{{ key }}">{{ values[key] }}</textarea>
+        {% else %}<input name="{{ key }}" value="{{ values[key] }}">{% endif %}
+      </label>
+      {% endfor %}
+      <button class="save wide">保存</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

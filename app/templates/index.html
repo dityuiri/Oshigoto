@@ -1,0 +1,250 @@
+{#- Both languages are rendered; site.js flips data-lang per panel and CSS hides the other. -#}
+{%- macro t(en, ja) -%}
+{%- set en_ = en or ja or "" -%}{%- set ja_ = ja or en or "" -%}
+<span lang="en">{{ en_ }}</span><span lang="ja">{{ ja_ }}</span>
+{%- endmacro -%}
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ s.nickname }} · おしごと</title>
+<meta name="description" content="{{ s.nickname }}: お仕事 (work) and 推し事 (fan life).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="{{ static_url('css/site.css') }}">
+</head>
+<body>
+
+<nav class="tabs" aria-label="Sides">
+  <button data-t="work" class="on">お仕事<small>WORK</small></button>
+  <button data-t="fan">推し事<small>FAN LIFE</small></button>
+</nav>
+
+<div class="split">
+  <!-- ===================== WORK ===================== -->
+  <section class="panel work" id="work" data-lang="en">
+    <div class="inner">
+      <div class="topbar">
+        <span class="kicker">お仕事 · o-shigoto · work</span>
+        <div class="lang" data-panel="work">
+          <button data-l="en">EN</button><button data-l="ja">日本語</button>
+        </div>
+      </div>
+
+      <h1>{{ s.nickname }}</h1>
+      <p class="role">{{ t(s.role_en, s.role_ja) }}</p>
+      {% if s.home_en or s.home_ja %}<p class="home"><i class="fa-solid fa-location-dot"></i> {{ t(s.home_en, s.home_ja) }}</p>{% endif %}
+      <p class="bio">{{ t(s.bio_en, s.bio_ja) }}</p>
+      <div>
+        {% if s.github_url %}<a class="btn primary" href="{{ s.github_url }}" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a>{% endif %}
+        {% if s.linkedin_url %}<a class="btn" href="{{ s.linkedin_url }}" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>{% endif %}
+        {% if s.email %}<a class="btn" href="#" data-mail="{{ s.email|reverse }}"><i class="fa-solid fa-envelope"></i> {{ t("Mail", "メール") }}</a>{% endif %}
+      </div>
+
+      {% if projects %}
+      <h2>{{ t("Things I made", "作ったもの") }}</h2>
+      {% for p in projects %}
+      <article class="proj">
+        {% if p.logo_path %}<div class="proj-logo"><img src="{{ media_url(p.logo_path) }}" alt="{{ p.name }}"></div>{% endif %}
+        <div class="proj-body">
+          <h3>{{ p.name }}{% if p.name_sub %} <span style="font-weight:500;color:var(--w-mute)">{{ p.name_sub }}</span>{% endif %}</h3>
+          {% if p.sub_en or p.sub_ja %}<div class="sub">{{ t(p.sub_en, p.sub_ja) }}</div>{% endif %}
+          {% if p.blurb_en or p.blurb_ja %}<p>{{ t(p.blurb_en, p.blurb_ja) }}</p>{% endif %}
+          {% if p.tags %}<div style="margin-bottom:14px">{% for tag in p.tags.split(",") if tag.strip() %}<span class="chip">{{ tag.strip() }}</span>{% endfor %}</div>{% endif %}
+          {% if p.url %}
+          <div class="row">
+            <span class="status">{{ t("Live", "公開中") }}</span>
+            <a class="btn primary" href="{{ p.url }}" target="_blank" rel="noopener">{{ t("Try it", "使ってみる") }} <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+          </div>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+      {% endif %}
+
+      {% if work %}
+      <h2>{{ t("Experience", "経歴") }}</h2>
+      <ul class="tl">
+        {% for e in work %}
+        <li>
+          <div class="when">{{ e.start }} – {% if e.end %}{{ e.end }}{% else %}{{ t("now", "現在") }}{% endif %}</div>
+          <div class="what">
+            <b>{{ t(e.title_en, e.title_ja) }}</b>
+            {% if e.org_en or e.org_ja %}<span>{{ t(e.org_en, e.org_ja) }}</span>{% endif %}
+            {% if e.note_en or e.note_ja %}<p>{{ t(e.note_en, e.note_ja) }}</p>{% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if s.languages_en or s.languages_ja %}
+      <h2>{{ t("Languages", "言語") }}</h2>
+      {% for code, text in (("en", s.languages_en or s.languages_ja), ("ja", s.languages_ja or s.languages_en)) %}
+      <ul class="langs" lang="{{ code }}">
+        {% for line in text.splitlines() if line.strip() %}
+        {% set name, _, level = line.partition("|") %}
+        <li><b>{{ name.strip() }}</b>{% if level.strip() %}<span>{{ level.strip() }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+      {% endif %}
+
+      {% if s.stack %}
+      <h2>{{ t("Day-to-day stack", "よく使う技術") }}</h2>
+      <div>{% for item in s.stack.split(",") if item.strip() %}<span class="chip">{{ item.strip() }}</span>{% endfor %}</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ===================== FAN ===================== -->
+  <section class="panel fan" id="fan" data-lang="ja" data-m-hidden>
+    <div class="inner">
+      <div class="topbar">
+        <span class="kicker">推し事 · oshigoto · fan life</span>
+        <div class="lang" data-panel="fan">
+          <button data-l="en">EN</button><button data-l="ja">日本語</button>
+        </div>
+      </div>
+
+      {% if s.fan_name %}<p class="fan-name">{{ s.fan_name }}</p>{% endif %}
+      <h1><span lang="en">{{ (s.fan_title_en or s.fan_title_ja)|safe }}</span><span lang="ja">{{ (s.fan_title_ja or s.fan_title_en)|safe }}</span></h1>
+      {% if s.fan_bio_en or s.fan_bio_ja %}<p class="bio">{{ t(s.fan_bio_en, s.fan_bio_ja) }}</p>{% endif %}
+      {% if s.home_en or s.home_ja %}<p class="home"><i class="fa-solid fa-location-dot"></i> {{ t(s.home_en, s.home_ja) }}</p>{% endif %}
+      <div class="sns">
+        {% if s.x_url %}<a class="btn" href="{{ s.x_url }}" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> {{ s.x_label or "X" }}</a>{% endif %}
+        {% if s.instagram_url %}<a class="btn" href="{{ s.instagram_url }}" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i> Instagram</a>{% endif %}
+        {% if s.tiktok_url %}<a class="btn" href="{{ s.tiktok_url }}" target="_blank" rel="noopener"><i class="fa-brands fa-tiktok"></i> TikTok</a>{% endif %}
+      </div>
+
+      <div class="h2row">
+        <h2>{{ t("Oshi", "推し") }}</h2>
+        <span class="count">{{ t(oshis|length ~ " oshi", oshis|length ~ "人") }}</span>
+      </div>
+      {% if oshis %}
+      <div class="oshis">
+        {% for stack in oshi_stacks %}
+        {% set slot = loop.index %}
+        <div class="stack">
+        {% for o in stack %}
+        {% set g = o.group %}
+        {% set other = stack[loop.index % stack|length] if stack|length > 1 else none %}
+        <article class="oshi {{ 'graduated' if o.graduated_on }}" style="--mc:{{ o.color }}" {% if not loop.first %}hidden{% endif %}>
+          <span class="no">No.{{ "%02d"|format(slot) }}</span>
+          {% if other %}<button class="swap" type="button" style="--oc:{{ other.color }}" aria-label="{{ other.name_romaji or other.name_ja }}"><span class="mini-av">{{ other.name_ja[:1] }}{% if other.icon_path %}<img src="{{ media_url(other.icon_path) }}" alt="" loading="lazy">{% endif %}</span><i class="fa-solid fa-right-left"></i></button>{% endif %}
+          <div class="avatar">{{ o.name_ja[:1] }}{% if o.icon_path %}<img src="{{ media_url(o.icon_path) }}" alt="" loading="lazy">{% endif %}</div>
+          <div class="nm">{{ t(o.name_romaji, o.name_ja) }}</div>
+          {% if o.name_romaji %}<div class="rm"><span lang="en">{{ o.name_ja }}</span><span lang="ja">{{ o.name_romaji }}</span></div>{% endif %}
+          <span class="grp">{{ t(g.name_en, g.name_ja) }}</span>
+          {% if o.graduated_on %}<div class="grad-badge"><i class="fa-solid fa-graduation-cap"></i> {{ t("Graduated", "卒業") }}<span class="gd">{{ t(o.graduated_on.strftime("%b %Y"), o.graduated_on.strftime("%Y.%m")) }}</span></div>{% endif %}
+          {% if o.prev_group %}{% set pg = o.prev_group %}<div class="ex">{{ t("ex-" ~ (pg.name_en or pg.name_ja), "元" ~ pg.name_ja) }}</div>{% endif %}
+          {% if o.since or g.since %}
+          <div class="since">
+            {% if o.since %}{{ t("Since", "推し始め") }}
+            <b>{{ t(o.since.strftime("%b %Y"), o.since.strftime("%Y.%m")) }}</b><br>
+            {% if not o.graduated_on %}{{ "{:,}".format((today - o.since).days) }}{{ t(" days", "日") }}{% endif %}{% endif %}
+            {% if g.since %}<div class="gsince">{{ t("Group since", "グループ推し") }}
+              <b>{{ t(g.since.strftime("%b %Y"), g.since.strftime("%Y.%m")) }}</b></div>{% endif %}
+          </div>
+          {% endif %}
+          {% if o.note_en or o.note_ja %}<p class="note">{{ t(o.note_en, o.note_ja) }}</p>{% endif %}
+          {% if o.x_handle or o.instagram or o.tiktok or g.x_handle %}
+          <div class="links">
+            {% if o.x_handle %}<a href="{{ sns_url('x', o.x_handle) }}" target="_blank" rel="noopener" title="X"><i class="fa-brands fa-x-twitter"></i></a>{% endif %}
+            {% if o.instagram %}<a href="{{ sns_url('instagram', o.instagram) }}" target="_blank" rel="noopener" title="Instagram"><i class="fa-brands fa-instagram"></i></a>{% endif %}
+            {% if o.tiktok %}<a href="{{ sns_url('tiktok', o.tiktok) }}" target="_blank" rel="noopener" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>{% endif %}
+            {% if g.x_handle %}{% if o.x_handle or o.instagram or o.tiktok %}<span class="sep"></span>{% endif %}
+            <a href="{{ sns_url('x', g.x_handle) }}" target="_blank" rel="noopener" title="{{ g.name_ja }}"><i class="fa-solid fa-users"></i></a>{% endif %}
+          </div>
+          {% endif %}
+          <a class="songs-link" href="#songs-h" data-g="{{ g.id }}">♪ {{ t("Favorite songs", "好き曲") }}</a>
+        </article>
+        {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty-note">{{ t("Coming soon…", "準備中…") }}</p>
+      {% endif %}
+
+      {% if groups %}
+      <h2 id="songs-h">{{ t("Favorite songs", "好き曲") }}</h2>
+      <div class="gtabs" role="tablist">
+        {% for g in groups %}
+        <button role="tab" data-g="{{ g.id }}" class="{{ 'on' if loop.first }}">
+          <span class="gicon">{{ g.name_ja[:1] }}{% if g.icon_path %}<img src="{{ media_url(g.icon_path) }}" alt="" loading="lazy">{% endif %}</span>{{ t(g.name_en, g.name_ja) }}
+        </button>
+        {% endfor %}
+      </div>
+      {% for g in groups %}
+      <div class="gpanel" data-g="{{ g.id }}" {% if not loop.first %}hidden{% endif %}>
+        <div class="gpanel-h">
+          <span class="mini">{% for o in members_by_group[g.id] %}<span style="background:{{ o.color }}">{{ o.name_ja[:1] }}{% if o.icon_path %}<img src="{{ media_url(o.icon_path) }}" alt="" loading="lazy">{% endif %}</span>{% endfor %}</span>
+          <span class="who">{% for o in members_by_group[g.id] %}{{ t(o.name_romaji, o.name_ja) }}{% if not loop.last %} · {% endif %}{% endfor %}</span>
+          {% if g.official_url or g.x_handle or g.instagram or g.tiktok or g.youtube %}
+          <span class="glinks">
+            {% if g.official_url %}<a href="{{ g.official_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-house"></i></a>{% endif %}
+            {% if g.instagram %}<a href="{{ sns_url('instagram', g.instagram) }}" target="_blank" rel="noopener" title="Instagram"><i class="fa-brands fa-instagram"></i></a>{% endif %}
+            {% if g.tiktok %}<a href="{{ sns_url('tiktok', g.tiktok) }}" target="_blank" rel="noopener" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>{% endif %}
+            {% if g.youtube %}<a href="{{ sns_url('youtube', g.youtube) }}" target="_blank" rel="noopener" title="YouTube"><i class="fa-brands fa-youtube"></i></a>{% endif %}
+            {% if g.x_handle %}<a href="{{ sns_url('x', g.x_handle) }}" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> {{ t("Official X", "公式X") }}</a>{% endif %}
+          </span>
+          {% endif %}
+        </div>
+        <div class="sgrid">
+          {% for sg in songs_by_group[g.id] %}
+          <article class="song">
+            <div class="top">
+              <div class="jacket" style="background:linear-gradient(135deg,var(--f-accent),#1b1640)"><i class="fa-solid fa-music"></i>{% if sg.jacket_path %}<img src="{{ media_url(sg.jacket_path) }}" alt="" loading="lazy">{% endif %}</div>
+              <div>
+                <div class="t">{{ t(sg.title_romaji, sg.title_ja) }}</div>
+                <div class="meta">{% if sg.year %}{{ sg.year }}{% endif %}{% if sg.title_romaji %}<span lang="en">{% if sg.year %} · {% endif %}{{ sg.title_ja }}</span>{% endif %}</div>
+              </div>
+            </div>
+            {% if sg.comment_en or sg.comment_ja %}<p class="cm">{{ t(sg.comment_en, sg.comment_ja) }}</p>{% else %}<p class="cm"></p>{% endif %}
+            {% if sg.point_en or sg.point_ja %}<div class="pt" style="background:color-mix(in srgb,var(--f-accent) 22%,transparent)"><i class="fa-solid fa-star"></i> {{ t(sg.point_en, sg.point_ja) }}</div>{% endif %}
+            <div class="acts">
+              {% if sg.linkcore_url %}<a class="tc" href="{{ sg.linkcore_url }}" target="_blank" rel="noopener"><i class="{{ listen_icon(sg.linkcore_url) }}"></i> {{ t("Listen", "配信で聴く") }}</a>{% endif %}
+              {% if sg.mv_url %}<a href="{{ sg.mv_url }}" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i> MV</a>{% endif %}
+              {% if sg.lyrics_url %}<a href="{{ sg.lyrics_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-align-left"></i> {{ t("Lyrics", "歌詞") }}</a>{% endif %}
+              {% if sg.live_url %}<a href="{{ sg.live_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-video"></i> {{ t("Live", "ライブ映像") }}</a>{% endif %}
+            </div>
+          </article>
+          {% else %}
+          <div class="song empty">{{ t("Coming soon…", "準備中…") }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if graduated %}
+      <h2>{{ t("Graduated", "卒業した推し") }}</h2>
+      <div class="grad-list">
+        {% for stack in graduated %}
+        <span class="stack">
+        {% for o in stack %}
+        {% set other = stack[loop.index % stack|length] if stack|length > 1 else none %}
+        <span class="grad-item" {% if not loop.first %}hidden{% endif %}>
+          <span class="av" style="background:{{ o.color }}">{{ o.name_ja[:1] }}{% if o.icon_path %}<img src="{{ media_url(o.icon_path) }}" alt="" loading="lazy">{% endif %}</span>
+          <span><b>{{ t(o.name_romaji, o.name_ja) }}</b> · {{ t(o.group.name_en, o.group.name_ja) }} · {{ o.graduated_on.strftime("%Y.%m") }}</span>
+          {% if other %}<button class="swap" type="button" style="--oc:{{ other.color }}" aria-label="{{ other.name_romaji or other.name_ja }}"><span class="mini-av">{{ other.name_ja[:1] }}{% if other.icon_path %}<img src="{{ media_url(other.icon_path) }}" alt="" loading="lazy">{% endif %}</span><i class="fa-solid fa-right-left"></i></button>{% endif %}
+        </span>
+        {% endfor %}
+        </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if s.mygenba_url %}<p class="foot">{{ t("My live schedule lives on", "現場の予定は") }} <a href="{{ s.mygenba_url }}" target="_blank" rel="noopener">マイ現場</a></p>{% endif %}
+    </div>
+  </section>
+</div>
+
+<div class="seam" aria-hidden="true"><div class="seam-badge">お仕事 ⇄ 推し事<small>OSHIGOTO</small></div></div>
+
+<script src="{{ static_url('js/site.js') }}"></script>
+</body>
+</html>

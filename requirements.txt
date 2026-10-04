@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+jinja2
+httpx
+python-multipart
+psycopg[binary]   # only used when DATABASE_URL points at Postgres

@@ -1,0 +1,9 @@
+.git
+.venv
+.idea
+data
+mockups
+scripts
+__pycache__
+.env
+backups

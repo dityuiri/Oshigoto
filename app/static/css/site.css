@@ -1,0 +1,257 @@
+/* Each side has its own fixed palette on purpose: the contrast between the
+   two halves is the concept. */
+:root {
+  --w-bg: #f6f4ef; --w-ink: #1d1d1f; --w-mute: #6b6b70; --w-line: #dedad2;
+  --w-accent: #1f6f6b; --w-card: #ffffff;
+  --f-bg: #15122b; --f-bg2: #1e1940; --f-ink: #f4f1ff; --f-mute: #a9a3c9;
+  --f-line: #2f2958; --f-accent: #ff6fae;
+  --seam: 56px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--w-bg); font-family: Inter, "Noto Sans JP", system-ui, sans-serif; }
+a { color: inherit; }
+
+/* ---------- layout ---------- */
+.split { display: flex; height: 100vh; }
+.panel { flex: 1 1 0; overflow-y: auto; transition: flex-grow .35s ease; min-width: 0; }
+.split:has(.work:hover) .work, .split:has(.fan:hover) .fan { flex-grow: 1.25; }
+.inner { max-width: 620px; margin: 0 auto; padding: 56px 40px 80px; }
+
+.seam {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  z-index: 5; pointer-events: none; transition: left .35s ease;
+}
+.split:has(.work:hover) ~ .seam { left: 55.5%; }
+.split:has(.fan:hover) ~ .seam { left: 44.5%; }
+.seam-badge {
+  writing-mode: vertical-rl; background: #fff; color: #1d1d1f; border-radius: 999px;
+  padding: 18px 10px; font: 700 15px "M PLUS Rounded 1c", sans-serif; letter-spacing: .15em;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25); border: 2px solid var(--f-accent);
+}
+.seam-badge small { display: block; font-size: 10px; color: var(--w-mute); letter-spacing: .3em; margin-top: 6px; }
+
+/* mobile tabs */
+.tabs { display: none; }
+@media (max-width: 820px) {
+  .seam { display: none; }
+  .split { display: block; height: auto; }
+  .panel { overflow: visible; min-height: 100vh; }
+  .panel[data-m-hidden] { display: none; }
+  .inner { padding: 28px 16px 64px; }
+  .tabs {
+    display: flex; position: sticky; top: 0; z-index: 10; background: #fff;
+    border-bottom: 1px solid var(--w-line);
+  }
+  .tabs button {
+    flex: 1; border: 0; background: none; padding: 14px 0 12px; font: 700 15px "M PLUS Rounded 1c", sans-serif;
+    color: var(--w-mute); border-bottom: 3px solid transparent; cursor: pointer;
+  }
+  .tabs button.on[data-t=work] { color: var(--w-accent); border-color: var(--w-accent); }
+  .tabs button.on[data-t=fan] { color: #c2367a; border-color: var(--f-accent); }
+  .tabs button small { display: block; font: 500 10px Inter, sans-serif; letter-spacing: .1em; }
+}
+
+/* ---------- shared bits ---------- */
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+.kicker { font: 600 12px "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; }
+.lang { display: inline-flex; border-radius: 999px; padding: 3px; gap: 2px; }
+.lang button { border: 0; border-radius: 999px; padding: 5px 12px; font: 600 12px Inter, sans-serif; cursor: pointer; background: none; }
+h2 { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; margin: 48px 0 16px; display: flex; align-items: center; gap: 10px; }
+h2::after { content: ""; flex: 1; height: 1px; }
+.chip { display: inline-block; font: 500 12px "JetBrains Mono", monospace; padding: 4px 10px; border-radius: 6px; margin: 0 6px 6px 0; }
+.btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; font-size: 14px; padding: 9px 16px; border-radius: 10px; }
+
+/* ---------- WORK ---------- */
+.work { background: var(--w-bg); color: var(--w-ink); }
+.work .kicker { color: var(--w-accent); }
+.work .lang { background: #e9e5dc; }
+.work .lang button { color: var(--w-mute); }
+.work .lang button.on { background: var(--w-ink); color: #fff; }
+.work h1 { font: 700 44px/1.05 Inter, "Noto Sans JP", sans-serif; letter-spacing: -.02em; margin: 0 0 8px; }
+.work .role { font: 500 16px "JetBrains Mono", monospace; color: var(--w-accent); margin: 0 0 20px; }
+.work .home { margin: -12px 0 20px; font-size: 14px; color: var(--w-mute); }
+.work .home i { color: var(--w-accent); margin-right: 4px; }
+.work .bio { font-size: 16px; line-height: 1.7; color: #3a3a3f; margin: 0 0 24px; }
+.work h2 { color: var(--w-mute); }
+.work h2::after { background: var(--w-line); }
+.work .btn { border: 1.5px solid var(--w-ink); color: var(--w-ink); margin: 0 8px 8px 0; }
+.work .btn.primary { background: var(--w-ink); color: #fff; }
+.work .chip { background: #e9e5dc; color: #3a3a3f; }
+
+.proj { background: var(--w-card); border: 1px solid var(--w-line); border-radius: 16px; overflow: hidden; }
+.proj-logo { background: #fff7f2; display: flex; justify-content: center; padding: 22px; border-bottom: 1px solid var(--w-line); }
+.proj-logo img { height: 64px; }
+.proj-body { padding: 20px 22px 22px; }
+.proj-body h3 { margin: 0 0 4px; font-size: 20px; }
+.proj-body .sub { color: var(--w-mute); font-size: 13px; margin-bottom: 12px; }
+.proj-body p { margin: 0 0 14px; line-height: 1.65; color: #3a3a3f; font-size: 15px; }
+.proj-body .row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.status { font: 600 12px "JetBrains Mono", monospace; color: #1a7f37; }
+.status::before { content: "●"; margin-right: 6px; }
+
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li { display: grid; grid-template-columns: 112px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px dashed var(--w-line); }
+.tl .when { font: 500 13px "JetBrains Mono", monospace; color: var(--w-mute); padding-top: 2px; }
+.tl .what b { display: block; font-size: 16px; }
+.tl .what span { color: var(--w-mute); font-size: 14px; }
+.tl .what p { margin: 6px 0 0; font-size: 14px; line-height: 1.6; color: #3a3a3f; }
+@media (max-width: 480px) { .tl li { grid-template-columns: 1fr; gap: 4px; } }
+
+.langs { list-style: none; margin: 0; padding: 0; }
+.langs li { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 16px; padding: 12px 0; border-bottom: 1px dashed var(--w-line); }
+.langs b { font-size: 16px; }
+.langs span { font: 500 13px "JetBrains Mono", monospace; color: var(--w-mute); }
+
+/* ---------- FAN ---------- */
+.fan {
+  background: radial-gradient(1200px 600px at 80% -10%, #3b2a7a 0%, transparent 60%), var(--f-bg);
+  color: var(--f-ink); font-family: "M PLUS Rounded 1c", "Noto Sans JP", sans-serif;
+}
+.fan .kicker { color: var(--f-accent); }
+.fan .lang { background: var(--f-line); }
+.fan .lang button { color: var(--f-mute); }
+.fan .lang button.on { background: var(--f-accent); color: #fff; }
+.fan h1 { font: 800 40px/1.15 "M PLUS Rounded 1c", sans-serif; margin: 0 0 10px; }
+.fan h1 .grad { background: linear-gradient(90deg, #ff6fae, #ffb86b, #7cd4ff, #b48cff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.fan .bio { color: var(--f-mute); line-height: 1.8; margin: 0 0 22px; font-size: 15px; }
+/* the work side says "Dity" in Inter; the fan side answers in katakana */
+.fan .fan-name { font: 800 26px/1.2 "M PLUS Rounded 1c", sans-serif; letter-spacing: .12em; color: var(--f-accent); margin: 0 0 6px; }
+.fan .home { margin: -14px 0 22px; font-size: 13px; color: var(--f-mute); }
+.fan .home i { color: var(--f-accent); margin-right: 4px; }
+.fan h2 { color: var(--f-mute); font-family: "M PLUS Rounded 1c", sans-serif; }
+.fan h2::after { background: var(--f-line); }
+.sns { display: flex; gap: 10px; flex-wrap: wrap; }
+.sns a { background: var(--f-bg2); border: 1px solid var(--f-line); color: var(--f-ink); }
+.sns a:hover { border-color: var(--f-accent); }
+
+.h2row { display: flex; align-items: center; gap: 10px; margin: 48px 0 16px; }
+.h2row h2 { margin: 0; flex: 1; }
+.count { font-size: 12px; color: var(--f-mute); }
+
+/* 10-12 cards: compact enough for 3 columns in the half panel, 2 on phones */
+.oshis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+@media (max-width: 480px) { .oshis { grid-template-columns: 1fr 1fr; gap: 10px; } }
+.oshi {
+  --mc: #ff6fae; position: relative; background: var(--f-bg2); border: 1px solid var(--f-line);
+  border-radius: 16px; padding: 18px 10px 12px; text-align: center; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center;
+  transition: transform .2s, box-shadow .2s;
+}
+/* card serial like a trading card (トレカ), not a podium position */
+.oshi .no {
+  position: absolute; top: 8px; left: 10px; z-index: 1; font: 600 10px "JetBrains Mono", monospace;
+  letter-spacing: .06em; color: rgba(255,255,255,.7);
+}
+.oshi::before { content: ""; position: absolute; inset: 0 0 auto; height: 64px; background: linear-gradient(180deg, color-mix(in srgb, var(--mc) 55%, transparent), transparent); }
+.oshi:hover { transform: translateY(-3px); box-shadow: 0 10px 30px color-mix(in srgb, var(--mc) 35%, transparent); }
+.avatar {
+  position: relative; width: 68px; height: 68px; border-radius: 50%; margin: 0 auto 8px;
+  display: grid; place-items: center; font: 800 24px "M PLUS Rounded 1c", sans-serif; color: #fff;
+  background: linear-gradient(135deg, var(--mc), color-mix(in srgb, var(--mc) 40%, #15122b));
+  box-shadow: 0 0 0 3px var(--f-bg2), 0 0 0 5px var(--mc);
+}
+.oshi .nm { position: relative; font-weight: 800; font-size: 17px; }
+.oshi .rm { font-size: 11px; color: var(--f-mute); letter-spacing: .05em; }
+.oshi .grp { display: inline-block; margin: 8px 0 6px; font-size: 11px; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--mc) 22%, transparent); color: #fff; }
+.oshi .ex { margin: -2px 0 6px; font-size: 11px; color: var(--f-mute); }
+/* 卒業 in a pair: same card, quieter (desaturated, dashed edge, no glow) */
+.oshi .grad-badge {
+  display: inline-flex; align-items: center; gap: 5px; margin: -2px 0 8px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 25%, transparent); background: var(--f-bg);
+  font-size: 10px; font-weight: 800; letter-spacing: .08em; color: var(--f-ink);
+}
+.oshi .grad-badge .gd { font: 500 10px "JetBrains Mono", monospace; letter-spacing: 0; color: var(--f-mute); }
+.oshi.graduated { background: color-mix(in srgb, var(--f-bg2) 55%, var(--f-bg)); border-style: dashed; }
+.oshi.graduated::before { opacity: .4; filter: grayscale(.6); }
+.oshi.graduated .avatar { filter: grayscale(.6) brightness(.85); }
+.oshi.graduated > :not(.no):not(.swap):not(.grad-badge) { opacity: .7; }
+.oshi.graduated:hover { transform: none; box-shadow: none; }
+.oshi .since { font-size: 12px; color: var(--f-mute); line-height: 1.5; }
+.oshi .since b { color: var(--f-ink); }
+.oshi .gsince { margin-top: 4px; font-size: 11px; }
+.oshi .gsince b { color: var(--f-ink); opacity: .85; }
+.oshi .links { align-self: stretch; display: flex; justify-content: center; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--f-line); }
+.oshi .links a { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; background: var(--f-bg); color: var(--f-mute); text-decoration: none; }
+.oshi .links a:hover { color: #fff; background: var(--mc); }
+.oshi .links .sep { width: 1px; background: var(--f-line); margin: 4px 2px; }
+/* two oshi from one group share a slot; .swap flips to the other card */
+.stack { display: grid; }
+.stack > [hidden] { display: none !important; }
+.stack > :not([hidden]) { animation: flip-in .25s ease-out; }
+@keyframes flip-in { from { opacity: 0; transform: rotateY(70deg); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .stack > :not([hidden]) { animation: none; } }
+.swap {
+  display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px 2px 2px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--f-line); background: var(--f-bg); color: var(--f-mute); font-size: 9px;
+}
+.swap:hover { color: var(--f-ink); border-color: var(--oc); }
+.swap .mini-av {
+  position: relative; overflow: hidden; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--oc); color: #fff; font: 800 9px "M PLUS Rounded 1c", sans-serif;
+}
+.swap .mini-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.oshi .swap { position: absolute; top: 6px; right: 6px; z-index: 1; }
+.grad-list .stack { display: inline-grid; }
+.grad-item .swap { margin-left: 2px; }
+.oshi .songs-link { display: block; margin-top: auto; padding-top: 10px; font-size: 11px; color: var(--mc); text-decoration: none; filter: brightness(1.3); }
+
+/* 好き曲: one section per group that has an oshi, songs in a sideways row */
+/* 好き曲: one tab per group that has an oshi, only the picked group is shown */
+.gtabs { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 8px; margin-bottom: 4px; scrollbar-width: thin; scrollbar-color: var(--f-line) transparent; }
+.gtabs button {
+  flex: none; display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--f-line); background: var(--f-bg2);
+  color: var(--f-mute); border-radius: 999px; padding: 7px 13px; font: 600 13px "M PLUS Rounded 1c", sans-serif; cursor: pointer;
+}
+.gtabs button, .gpanel { --gc: var(--f-accent); }
+.gtabs button .gicon { position: relative; overflow: hidden; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 800; color: #fff; background: var(--f-line); }
+.gtabs button .gicon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.gtabs button.on { color: #fff; border-color: var(--gc); background: color-mix(in srgb, var(--gc) 28%, var(--f-bg2)); }
+.gpanel { border: 1px solid var(--f-line); border-radius: 16px; padding: 14px; background: color-mix(in srgb, var(--gc) 6%, transparent); scroll-margin-top: 64px; }
+.gpanel-h { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.gpanel-h .mini { display: flex; }
+.gpanel-h .mini span { width: 24px; height: 24px; border-radius: 50%; margin-left: -6px; border: 2px solid var(--f-bg); display: grid; place-items: center; font-size: 10px; font-weight: 800; color: #fff; }
+.gpanel-h .mini span:first-child { margin-left: 0; }
+.gpanel-h .who { font-size: 12px; color: var(--f-mute); }
+.gpanel-h .glinks { margin-left: auto; display: inline-flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.gpanel-h a { color: var(--f-mute); font-size: 13px; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+.gpanel-h a:hover { color: var(--f-ink); }
+@media (max-width: 480px) { .gtabs { flex-wrap: nowrap; overflow-x: auto; } }
+.sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.song { background: var(--f-bg2); border: 1px solid var(--f-line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; }
+.song .top { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+.jacket { flex: none; width: 56px; height: 56px; border-radius: 8px; display: grid; place-items: center; color: rgba(255,255,255,.9); font-size: 18px; position: relative; overflow: hidden; }
+.jacket::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, rgba(255,255,255,.06) 0 6px, transparent 6px 12px); }
+.song .t { font-weight: 800; font-size: 14px; line-height: 1.35; }
+.song .meta { font-size: 11px; color: var(--f-mute); margin-top: 2px; }
+.song .cm { font-size: 13px; line-height: 1.6; margin: 0 0 8px; flex: 1; }
+.song .pt { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; padding: 3px 8px; border-radius: 8px; margin-bottom: 10px; align-self: flex-start; }
+.song .acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.song .acts a { font-size: 12px; padding: 6px 10px; border-radius: 8px; background: var(--f-bg); border: 1px solid var(--f-line); color: var(--f-ink); text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+.song .acts a.tc { background: var(--f-accent); border-color: var(--f-accent); color: #fff; }
+.song.empty { border-style: dashed; background: none; color: var(--f-mute); font-size: 13px; justify-content: center; align-items: center; min-height: 120px; }
+
+.foot { margin-top: 56px; text-align: center; font-size: 12px; color: var(--f-mute); }
+.foot a { color: var(--f-accent); }
+
+/* ---------- per-panel language: both languages are rendered, CSS hides one ---------- */
+.panel[data-lang="en"] [lang="ja"], .panel[data-lang="ja"] [lang="en"] { display: none !important; }
+
+/* real images inside the colored circles/squares */
+.avatar img, .jacket img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.jacket img { z-index: 1; }
+.gpanel-h .mini span { overflow: hidden; position: relative; }
+.gpanel-h .mini img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.oshi .note { position: relative; font-size: 12px; line-height: 1.5; margin: 6px 0 0; color: var(--f-ink); opacity: .85; }
+.gpanel[hidden] { display: none; }
+
+/* 卒業した推し: small, quiet, after the songs */
+.grad-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.grad-item { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: var(--f-bg2); border: 1px solid var(--f-line); font-size: 12px; color: var(--f-mute); text-decoration: none; }
+.grad-item .av { position: relative; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; color: #fff; font-weight: 800; filter: grayscale(.4); }
+.grad-item .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.grad-item b { color: var(--f-ink); font-weight: 700; }
+.empty-note { color: var(--f-mute); font-size: 13px; }
+.work .empty-note { color: var(--w-mute); }
+.proj + .proj { margin-top: 14px; }
+.bio { white-space: pre-line; }

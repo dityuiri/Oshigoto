@@ -1,0 +1,12 @@
+# secrets & data, never push these
+.env
+data/
+
+# environment / IDE
+.venv/
+.idea/
+__pycache__/
+*.pyc
+
+# server-side backups
+backups/
