@@ -11,6 +11,8 @@ Personal profile site for `dityuiri.my.id`. Two sides that read the same:
 
 Each side has its own EN / 日本語 switch. `?work=ja&fan=en` overrides it for
 shareable links; otherwise the visitor's last choice is remembered.
+On phones the sides are tabs (お仕事 by default); `/#fan` opens 推し事, and
+switching tabs updates the hash so the address bar always shares the open side.
 
 ## Stack
 
@@ -74,7 +76,8 @@ the image or git.
 
 ### First time
 
-1. **DNS**: an A record for `dityuiri.my.id` (apex, `@`) to the VM's IP.
+1. **DNS**: `@` A → the VM's IP (`www` is a CNAME to it; Caddy redirects it to the
+   apex). Mail stays on the registrar's host: `mail` A → its IP, MX → `mail.dityuiri.my.id`.
 2. **VM, clone** next to MyGenba and make the data dir:
    ```bash
    git clone <this repo> ~/Oshigoto && mkdir -p ~/Oshigoto/data/uploads
@@ -108,9 +111,11 @@ the image or git.
    docker compose up -d
    ```
    Keep `data/snapshot.db` until the live site checks out, then delete it.
-7. **VM, Caddy**: pull MyGenba with the `dityuiri.my.id` block in its Caddyfile, then
-   `cd ~/MyGenba && docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile`.
-   Caddy gets the certificate once DNS resolves.
+7. **VM, Caddy**: pull MyGenba with the `dityuiri.my.id` and `www` blocks in its Caddyfile, then
+   `cd ~/MyGenba && docker compose restart caddy`. A restart, not `caddy reload`:
+   the Caddyfile is a single-file bind mount and `git pull` replaces the file, so
+   the running container would keep seeing the old one. Certificates live in a
+   volume and survive. Caddy gets the new one once DNS resolves.
 8. **VM, backups**: `crontab -e` → `15 5 * * * ~/Oshigoto/backup.sh`
    (pg_dump + uploads tarball into `backups/`, newest 14 kept).
 
